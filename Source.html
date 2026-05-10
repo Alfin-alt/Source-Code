@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Drive Video Player</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .glass-morphism {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body class="py-10 px-4">
+
+    <div class="max-w-4xl mx-auto">
+        <div class="glass-morphism rounded-2xl shadow-2xl p-6 md:p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                    <i class="fab fa-google-drive text-blue-500 mr-2"></i>Google Drive Video Player
+                </h1>
+                <p class="text-gray-600">Masukkan link video Google Drive Anda untuk memutar secara langsung.</p>
+            </div>
+
+            <div class="mb-8">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <input type="text" id="driveUrl" 
+                        value="https://drive.google.com/file/d/1IWfemJ1SgBsdOVqMO7og5A9_53E-Penz/view?usp=drive_link"
+                        placeholder="Tempel link Google Drive di sini..." 
+                        class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all">
+                    <button onclick="processVideo()" 
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors flex items-center justify-center">
+                        <i class="fas fa-play mr-2"></i> Putar Video
+                    </button>
+                </div>
+                <p id="errorMessage" class="text-red-500 text-sm mt-2 hidden">Link tidak valid. Pastikan formatnya benar.</p>
+            </div>
+
+            <div id="playerSection" class="hidden">
+                <div class="video-container shadow-lg rounded-lg bg-black">
+                    <iframe id="videoIframe" src="" frameborder="0" allowfullscreen allow="autoplay"></iframe>
+                </div>
+                
+                <div class="mt-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded text-blue-700">
+                    <p class="font-semibold mb-1"><i class="fas fa-info-circle mr-2"></i>Tips Penting:</p>
+                    <ul class="text-sm list-disc list-inside">
+                        <li>Pastikan izin akses file di Google Drive sudah diatur ke <strong>"Siapa saja yang memiliki link"</strong>.</li>
+                        <li>Video mungkin butuh beberapa menit untuk diproses oleh Google setelah diunggah.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="instructions" class="grid md:grid-cols-2 gap-6 mt-10">
+                <div class="border border-gray-100 p-4 rounded-xl bg-gray-50">
+                    <h3 class="font-bold text-gray-700 mb-2 italic">1. Dapatkan Link</h3>
+                    <p class="text-sm text-gray-600">Klik kanan pada file video di Drive > Bagikan > Salin Link.</p>
+                </div>
+                <div class="border border-gray-100 p-4 rounded-xl bg-gray-50">
+                    <h3 class="font-bold text-gray-700 mb-2 italic">2. Tempel & Putar</h3>
+                    <p class="text-sm text-gray-600">Tempelkan link ke kotak input di atas dan tekan tombol "Putar Video".</p>
+                </div>
+            </div>
+        </div>
+
+        <footer class="text-center mt-8 text-white/80 text-sm">
+            &copy; 2024 Google Drive Video Player Helper
+        </footer>
+    </div>
+
+    <script>
+        function processVideo() {
+            const urlInput = document.getElementById('driveUrl').value;
+            const iframe = document.getElementById('videoIframe');
+            const playerSection = document.getElementById('playerSection');
+            const errorMessage = document.getElementById('errorMessage');
+            const instructions = document.getElementById('instructions');
+
+            // Regex untuk mengekstrak ID file dari berbagai format link Google Drive
+            const regex = /\/file\/d\/(.+?)\/(?:view|edit|preview)/;
+            const match = urlInput.match(regex);
+
+            if (match && match[1]) {
+                const fileId = match[1];
+                // Format URL untuk embedding Google Drive
+                const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+                
+                // Reset state
+                errorMessage.classList.add('hidden');
+                
+                // Load video
+                iframe.src = embedUrl;
+                playerSection.classList.remove('hidden');
+                instructions.classList.add('hidden');
+
+                // Auto-scroll ke player
+                playerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                // Tampilkan error jika format link salah
+                errorMessage.classList.remove('hidden');
+                playerSection.classList.add('hidden');
+                instructions.classList.remove('hidden');
+            }
+        }
+
+        window.onload = function() {
+            // Menjalankan pemutar video secara otomatis saat halaman dimuat
+            processVideo();
+        };
+
+        // Fitur tekan 'Enter' untuk memproses
+        document.getElementById('driveUrl').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                processVideo();
+            }
+        });
+    </script>
+</body>
+</html>
